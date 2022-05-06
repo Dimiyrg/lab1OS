@@ -1,0 +1,102 @@
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <conio.h>
+#include <windows.h> 
+
+using namespace std;
+struct employee
+{
+    int num;
+    char name[10];
+    double hours;
+};
+void replace(string& str, const string& from, const string& to) {
+    if (from.empty())
+        return;
+    string::size_type start_pos = 0;
+    while ((start_pos = str.find(from, start_pos)) != string::npos) {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length();
+    }
+}
+int main(int argc, char* argv[])
+{
+    string result;
+    string binary_file;
+    string report_file;
+    double salary;
+    int number_of_entries;
+    cout << "binary file name " << endl;
+    cin >> binary_file;
+    cout << "number_of_entries " << endl;
+    cin >> number_of_entries;
+    
+    string path = argv[0];
+    replace(path, "Main.exe", "");
+
+    STARTUPINFOA si;
+    PROCESS_INFORMATION piApp;
+    ZeroMemory(&si, sizeof(STARTUPINFO));
+    si.cb = sizeof(STARTUPINFO);
+    if (CreateProcessA((path + "Creator.exe").c_str(),// имя исполняемого модуля
+        (LPSTR)(path + "Creator.exe " + binary_file + " " + to_string(number_of_entries)).c_str(), // командная строка
+        NULL,
+        NULL,
+        FALSE,
+        NULL,
+        NULL,
+        NULL,
+        &si,
+        &piApp))
+    {
+        WaitForSingleObject(piApp.hProcess, INFINITE);
+        CloseHandle(piApp.hThread);
+        CloseHandle(piApp.hProcess);
+    }
+    else {
+        std::cout << "Process Creator.exe not start";
+        return 1;
+    }
+
+    
+    ifstream in(binary_file, ios::binary);
+    employee emp;
+    while (in.read((char*)&emp, sizeof(employee))) {
+        cout << emp.num << " " << emp.name << " " << emp.hours << endl;
+    }
+    cout << endl;
+    in.close();
+
+    cout << "report file name ";
+    cin >> report_file;
+    cout << "salary per hour ";
+    cin >> salary;
+    cout << endl;
+    
+    STARTUPINFO si2;
+    PROCESS_INFORMATION piApp2;
+    ZeroMemory(&si2, sizeof(si2));
+    
+
+    ZeroMemory(&si, sizeof(STARTUPINFO));
+    if (CreateProcessA((path + "Reporter.exe").c_str(),
+        (LPSTR)(path + "Reporter.exe " + binary_file + " " + report_file + " " + std::to_string(salary)).c_str(),
+        NULL, NULL, FALSE, NULL, NULL, NULL, &si, &piApp))
+    {
+        WaitForSingleObject(piApp.hProcess, INFINITE);
+        CloseHandle(piApp.hThread);
+        CloseHandle(piApp.hProcess);
+    }
+    else {
+        std::cout << "Process Reporter.exe not start";
+        return 1;
+    }
+
+    in.open(path + report_file);
+    while (getline(in, result))
+    {
+        cout << result << endl;
+    }
+    return 0;
+}
