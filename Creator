@@ -1,0 +1,31 @@
+#include<iostream>
+#include<fstream>
+using namespace std;
+struct employee
+{
+    int num;
+    char name[10];
+    double hours;
+};
+
+
+int main(int argc, char* argv[])
+{
+
+    fstream out(argv[1], ios::out | ios::binary);
+    int number = atoi(argv[2]);
+
+    for (int i = 0; i < number; i++)
+    {
+        employee emp;
+        cout << " input number of employee = " << std::endl;
+        cin >> emp.num;
+        cout << " input employee name = " << std::endl;
+        cin >> emp.name;
+        cout << " input hours = " << std::endl;
+        cin >> emp.hours;
+        out.write((char*)&emp, sizeof(employee));
+    }
+    out.close();
+    return 0;
+}
